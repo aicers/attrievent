@@ -9,6 +9,6 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added a new enum type `RawEventKind`. This type is created using the raw event
+- Added a new enum type `RawEventAttrKind`. This type is created using the raw event
   type and raw event's attribute name, which is later used by the triage to
   perform a comparison of values.

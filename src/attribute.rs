@@ -4,9 +4,9 @@ use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
 
-#[derive(Debug, Deserialize, Serialize, EnumString, PartialEq, EnumIter, Display)]
+#[derive(Debug, Deserialize, Serialize, EnumString, PartialEq, EnumIter, Display, Clone)]
 #[serde(rename_all = "snake_case")]
-pub enum RawEventType {
+pub enum RawEventKind {
     Bootp,
     Conn,
     Dhcp,
@@ -29,7 +29,7 @@ pub enum RawEventType {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum RawEventKind {
+pub enum RawEventAttrKind {
     Bootp(BootpAttr),
     Conn(ConnAttr),
     Dhcp(DhcpAttr),
@@ -51,44 +51,44 @@ pub enum RawEventKind {
     Window(WindowAttr),
 }
 
-impl RawEventKind {
-    /// Creates a new `RawEventKind` with the given raw event type and attribute name.
+impl RawEventAttrKind {
+    /// Creates a new `RawEventAttrKind` with the given `RawEventKind` and attribute name.
     ///
     /// # Errors
     ///
-    /// Returns an error if `RawEventKind` creation fails.
-    pub fn from_type_and_attr_name(type_name: &str, attr_name: &str) -> Result<RawEventKind> {
+    /// Returns an error if `RawEventAttrKind` creation fails.
+    pub fn from_kind_and_attr_name(
+        raw_event_kind: &RawEventKind,
+        attr_name: &str,
+    ) -> Result<RawEventAttrKind> {
         macro_rules! handle_attr {
             ($attr:ident, $type:ident) => {
-                $attr::from_str(attr_name).map(RawEventKind::$type)
+                $attr::from_str(attr_name).map(RawEventAttrKind::$type)
             };
         }
 
-        let Ok(raw_event_type) = RawEventType::from_str(type_name) else {
-            return Err(anyhow!("unknown raw event type : {type_name}"));
+        let parse_result = match raw_event_kind {
+            RawEventKind::Bootp => handle_attr!(BootpAttr, Bootp),
+            RawEventKind::Conn => handle_attr!(ConnAttr, Conn),
+            RawEventKind::Dhcp => handle_attr!(DhcpAttr, Dhcp),
+            RawEventKind::Dns => handle_attr!(DnsAttr, Dns),
+            RawEventKind::Ftp => handle_attr!(FtpAttr, Ftp),
+            RawEventKind::Http => handle_attr!(HttpAttr, Http),
+            RawEventKind::Kerberos => handle_attr!(KerberosAttr, Kerberos),
+            RawEventKind::Ldap => handle_attr!(LdapAttr, Ldap),
+            RawEventKind::Log => handle_attr!(LogAttr, Log),
+            RawEventKind::Mqtt => handle_attr!(MqttAttr, Mqtt),
+            RawEventKind::Network => handle_attr!(NetworkAttr, Network),
+            RawEventKind::Nfs => handle_attr!(NfsAttr, Nfs),
+            RawEventKind::Ntlm => handle_attr!(NtlmAttr, Ntlm),
+            RawEventKind::Rdp => handle_attr!(RdpAttr, Rdp),
+            RawEventKind::Smb => handle_attr!(SmbAttr, Smb),
+            RawEventKind::Smtp => handle_attr!(SmtpAttr, Smtp),
+            RawEventKind::Ssh => handle_attr!(SshAttr, Ssh),
+            RawEventKind::Tls => handle_attr!(TlsAttr, Tls),
+            RawEventKind::Window => handle_attr!(WindowAttr, Window),
         };
-        let parse_result = match raw_event_type {
-            RawEventType::Bootp => handle_attr!(BootpAttr, Bootp),
-            RawEventType::Conn => handle_attr!(ConnAttr, Conn),
-            RawEventType::Dhcp => handle_attr!(DhcpAttr, Dhcp),
-            RawEventType::Dns => handle_attr!(DnsAttr, Dns),
-            RawEventType::Ftp => handle_attr!(FtpAttr, Ftp),
-            RawEventType::Http => handle_attr!(HttpAttr, Http),
-            RawEventType::Kerberos => handle_attr!(KerberosAttr, Kerberos),
-            RawEventType::Ldap => handle_attr!(LdapAttr, Ldap),
-            RawEventType::Log => handle_attr!(LogAttr, Log),
-            RawEventType::Mqtt => handle_attr!(MqttAttr, Mqtt),
-            RawEventType::Network => handle_attr!(NetworkAttr, Network),
-            RawEventType::Nfs => handle_attr!(NfsAttr, Nfs),
-            RawEventType::Ntlm => handle_attr!(NtlmAttr, Ntlm),
-            RawEventType::Rdp => handle_attr!(RdpAttr, Rdp),
-            RawEventType::Smb => handle_attr!(SmbAttr, Smb),
-            RawEventType::Smtp => handle_attr!(SmtpAttr, Smtp),
-            RawEventType::Ssh => handle_attr!(SshAttr, Ssh),
-            RawEventType::Tls => handle_attr!(TlsAttr, Tls),
-            RawEventType::Window => handle_attr!(WindowAttr, Window),
-        };
-        parse_result.map_err(|e| anyhow!("unknown attribute name: {e}"))
+        parse_result.map_err(|e| anyhow!("Unknown attribute name: {e}"))
     }
 }
 
@@ -693,188 +693,189 @@ pub enum WindowAttr {
 mod tests {
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn convert_to_protocol_attr_enum() {
         use crate::attribute::{
             BootpAttr, ConnAttr, DhcpAttr, DnsAttr, FtpAttr, HttpAttr, KerberosAttr, LdapAttr,
-            LogAttr, MqttAttr, NetworkAttr, NfsAttr, NtlmAttr, RawEventKind, RawEventType, RdpAttr,
-            SmbAttr, SmtpAttr, SshAttr, TlsAttr, WindowAttr,
+            LogAttr, MqttAttr, NetworkAttr, NfsAttr, NtlmAttr, RawEventAttrKind, RawEventKind,
+            RdpAttr, SmbAttr, SmtpAttr, SshAttr, TlsAttr, WindowAttr,
         };
 
         const INVALID_ATTR_FIELD_NAME: &str = "invalid-attr-field";
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Conn.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Conn,
                 &ConnAttr::OrigBytes.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Conn(ConnAttr::OrigBytes)
+            RawEventAttrKind::Conn(ConnAttr::OrigBytes)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Bootp.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Bootp,
                 &BootpAttr::Op.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Bootp(BootpAttr::Op)
+            RawEventAttrKind::Bootp(BootpAttr::Op)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Dhcp.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Dhcp,
                 &DhcpAttr::SubNetMask.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Dhcp(DhcpAttr::SubNetMask)
+            RawEventAttrKind::Dhcp(DhcpAttr::SubNetMask)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Dns.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Dns,
                 &DnsAttr::Query.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Dns(DnsAttr::Query)
+            RawEventAttrKind::Dns(DnsAttr::Query)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Ftp.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Ftp,
                 &FtpAttr::ReplyMsg.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Ftp(FtpAttr::ReplyMsg)
+            RawEventAttrKind::Ftp(FtpAttr::ReplyMsg)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Http.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Http,
                 &HttpAttr::UserAgent.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Http(HttpAttr::UserAgent)
+            RawEventAttrKind::Http(HttpAttr::UserAgent)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Kerberos.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Kerberos,
                 &KerberosAttr::CnameType.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Kerberos(KerberosAttr::CnameType)
+            RawEventAttrKind::Kerberos(KerberosAttr::CnameType)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Ldap.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Ldap,
                 &LdapAttr::DiagnosticMessage.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Ldap(LdapAttr::DiagnosticMessage)
+            RawEventAttrKind::Ldap(LdapAttr::DiagnosticMessage)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Log.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Log,
                 &LogAttr::Content.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Log(LogAttr::Content)
+            RawEventAttrKind::Log(LogAttr::Content)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Mqtt.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Mqtt,
                 &MqttAttr::SubackReason.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Mqtt(MqttAttr::SubackReason)
+            RawEventAttrKind::Mqtt(MqttAttr::SubackReason)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Nfs.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Nfs,
                 &NfsAttr::WriteFiles.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Nfs(NfsAttr::WriteFiles)
+            RawEventAttrKind::Nfs(NfsAttr::WriteFiles)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Ntlm.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Ntlm,
                 &NtlmAttr::Domainname.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Ntlm(NtlmAttr::Domainname)
+            RawEventAttrKind::Ntlm(NtlmAttr::Domainname)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Rdp.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Rdp,
                 &RdpAttr::Cookie.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Rdp(RdpAttr::Cookie)
+            RawEventAttrKind::Rdp(RdpAttr::Cookie)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Smb.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Smb,
                 &SmbAttr::ResourceType.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Smb(SmbAttr::ResourceType)
+            RawEventAttrKind::Smb(SmbAttr::ResourceType)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Smtp.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Smtp,
                 &SmtpAttr::MailFrom.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Smtp(SmtpAttr::MailFrom)
+            RawEventAttrKind::Smtp(SmtpAttr::MailFrom)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Ssh.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Ssh,
                 &SshAttr::CipherAlg.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Ssh(SshAttr::CipherAlg)
+            RawEventAttrKind::Ssh(SshAttr::CipherAlg)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Tls.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Tls,
                 &TlsAttr::Ja3.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Tls(TlsAttr::Ja3)
+            RawEventAttrKind::Tls(TlsAttr::Ja3)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Window.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Window,
                 &WindowAttr::AgentId.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Window(WindowAttr::AgentId)
+            RawEventAttrKind::Window(WindowAttr::AgentId)
         );
 
         assert_eq!(
-            RawEventKind::from_type_and_attr_name(
-                &RawEventType::Network.to_string(),
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Network,
                 &NetworkAttr::Content.to_string()
             )
             .expect("The raw event type and attribute name are always valid."),
-            RawEventKind::Network(NetworkAttr::Content)
+            RawEventAttrKind::Network(NetworkAttr::Content)
         );
 
-        assert!(RawEventKind::from_type_and_attr_name(
-            &RawEventType::Conn.to_string(),
+        assert!(RawEventAttrKind::from_kind_and_attr_name(
+            &RawEventKind::Conn,
             INVALID_ATTR_FIELD_NAME
         )
         .is_err());
