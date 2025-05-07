@@ -304,8 +304,8 @@ pub enum HttpAttr {
     Host,
     #[strum(serialize = "URI")]
     Uri,
-    #[strum(serialize = "Referrer")]
-    Referrer,
+    #[strum(serialize = "Referer")]
+    Referer,
     #[strum(serialize = "HTTP Version")]
     Version,
     #[strum(serialize = "User Agent")]
