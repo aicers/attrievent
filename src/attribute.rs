@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
 
@@ -874,10 +874,9 @@ mod tests {
             RawEventAttrKind::Network(NetworkAttr::Content)
         );
 
-        assert!(RawEventAttrKind::from_kind_and_attr_name(
-            &RawEventKind::Conn,
-            INVALID_ATTR_FIELD_NAME
-        )
-        .is_err());
+        assert!(
+            RawEventAttrKind::from_kind_and_attr_name(&RawEventKind::Conn, INVALID_ATTR_FIELD_NAME)
+                .is_err()
+        );
     }
 }
