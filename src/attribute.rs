@@ -4,7 +4,7 @@ use anyhow::{Result, anyhow};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
 
-#[derive(Debug, Deserialize, Serialize, EnumString, PartialEq, EnumIter, Display, Clone)]
+#[derive(Debug, Deserialize, Serialize, EnumString, PartialEq, EnumIter, Display, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 pub enum RawEventKind {
     Bootp,
