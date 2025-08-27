@@ -8,3 +8,7 @@ anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 strum = "0.27"
 strum_macros = "0.27"
+
+[lints.clippy]
+pedantic = "warn"
+unwrap_used = "warn"
