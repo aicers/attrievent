@@ -173,7 +173,7 @@ pub enum DhcpAttr {
     #[strum(serialize = "Protocol Number")]
     Proto,
     #[strum(serialize = "Message Type")]
-    MgsType,
+    MsgType,
     #[strum(serialize = "Client IP")]
     CiAddr,
     #[strum(serialize = "Your IP")]
