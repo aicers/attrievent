@@ -7,6 +7,19 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Added `RadiusAttr` enum and `Radius` variant to `RawEventKind` and
+  `RawEventAttrKind` for RADIUS protocol support.
+- Added `Duration`, `OrigPkts`, `RespPkts`, `OrigL2Bytes`, and `RespL2Bytes`
+  variants to all protocol attribute enums (except `ConnAttr`).
+
+### Changed
+
+- Modified `HttpAttr` to merge `OrigMimeTypes` and `RespMimeTypes` into
+  `MimeTypes`, merge `OrigFilenames` and `RespFilenames` into `Filenames`,
+  and rename `PostBody` to `Body`.
+
 ### Fixed
 
 - Fixed typo in `DhcpAttr::MgsType` enum variant, renamed to

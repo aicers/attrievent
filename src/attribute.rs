@@ -20,6 +20,7 @@ pub enum RawEventKind {
     Network,
     Nfs,
     Ntlm,
+    Radius,
     Rdp,
     Smb,
     Smtp,
@@ -43,6 +44,7 @@ pub enum RawEventAttrKind {
     Network(NetworkAttr),
     Nfs(NfsAttr),
     Ntlm(NtlmAttr),
+    Radius(RadiusAttr),
     Rdp(RdpAttr),
     Smb(SmbAttr),
     Smtp(SmtpAttr),
@@ -81,6 +83,7 @@ impl RawEventAttrKind {
             RawEventKind::Network => handle_attr!(NetworkAttr, Network),
             RawEventKind::Nfs => handle_attr!(NfsAttr, Nfs),
             RawEventKind::Ntlm => handle_attr!(NtlmAttr, Ntlm),
+            RawEventKind::Radius => handle_attr!(RadiusAttr, Radius),
             RawEventKind::Rdp => handle_attr!(RdpAttr, Rdp),
             RawEventKind::Smb => handle_attr!(SmbAttr, Smb),
             RawEventKind::Smtp => handle_attr!(SmtpAttr, Smtp),
@@ -104,6 +107,16 @@ pub enum BootpAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Operation Code")]
     Op,
     #[strum(serialize = "Hardware Type")]
@@ -172,6 +185,16 @@ pub enum DhcpAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Message Type")]
     MsgType,
     #[strum(serialize = "Client IP")]
@@ -222,6 +245,16 @@ pub enum DnsAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Query")]
     Query,
     #[strum(serialize = "Answer")]
@@ -260,6 +293,16 @@ pub enum FtpAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Username")]
     User,
     #[strum(serialize = "Password")]
@@ -298,6 +341,16 @@ pub enum HttpAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "HTTP Method")]
     Method,
     #[strum(serialize = "Host")]
@@ -330,16 +383,12 @@ pub enum HttpAttr {
     ContentType,
     #[strum(serialize = "Cache Control")]
     CacheControl,
-    #[strum(serialize = "Request Filename")]
-    OrigFilenames,
-    #[strum(serialize = "Request MIME Types")]
-    OrigMimeTypes,
-    #[strum(serialize = "Response Filename")]
-    RespFilenames,
-    #[strum(serialize = "Response MIME Types")]
-    RespMimeTypes,
-    #[strum(serialize = "POST Body")]
-    PostBody,
+    #[strum(serialize = "Filenames")]
+    Filenames,
+    #[strum(serialize = "MIME Types")]
+    MimeTypes,
+    #[strum(serialize = "Body")]
+    Body,
     #[strum(serialize = "Last State")]
     State,
 }
@@ -356,6 +405,16 @@ pub enum KerberosAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Client Time")]
     ClientTime,
     #[strum(serialize = "Server Time")]
@@ -388,6 +447,16 @@ pub enum LdapAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Message ID")]
     MessageId,
     #[strum(serialize = "Version")]
@@ -416,6 +485,16 @@ pub enum MqttAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "MQTT Protocol")]
     Protocol,
     #[strum(serialize = "Version")]
@@ -442,6 +521,16 @@ pub enum NfsAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Read Files")]
     ReadFiles,
     #[strum(serialize = "Write Files")]
@@ -460,6 +549,16 @@ pub enum NtlmAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "NTLM Protocol")]
     Protocol,
     #[strum(serialize = "Username")]
@@ -470,6 +569,58 @@ pub enum NtlmAttr {
     Domainname,
     #[strum(serialize = "Success Flag")]
     Success,
+}
+
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum RadiusAttr {
+    #[strum(serialize = "Source IP")]
+    SrcAddr,
+    #[strum(serialize = "Source Port")]
+    SrcPort,
+    #[strum(serialize = "Destination IP")]
+    DstAddr,
+    #[strum(serialize = "Destination Port")]
+    DstPort,
+    #[strum(serialize = "Protocol Number")]
+    Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
+    #[strum(serialize = "ID")]
+    Id,
+    #[strum(serialize = "Request Code")]
+    Code,
+    #[strum(serialize = "Response Code")]
+    RespCode,
+    #[strum(serialize = "Request Authenticator")]
+    Auth,
+    #[strum(serialize = "Response Authenticator")]
+    RespAuth,
+    #[strum(serialize = "Username")]
+    UserName,
+    #[strum(serialize = "Password")]
+    UserPasswd,
+    #[strum(serialize = "CHAP Response")]
+    ChapPasswd,
+    #[strum(serialize = "NAS IP")]
+    NasIp,
+    #[strum(serialize = "NAS Port")]
+    NasPort,
+    #[strum(serialize = "State")]
+    State,
+    #[strum(serialize = "NAS ID")]
+    NasId,
+    #[strum(serialize = "NAS Port Type")]
+    NasPortType,
+    #[strum(serialize = "Message")]
+    Message,
 }
 
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
@@ -484,6 +635,16 @@ pub enum RdpAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Cookie")]
     Cookie,
 }
@@ -500,6 +661,16 @@ pub enum SmbAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Command")]
     Command,
     #[strum(serialize = "Path")]
@@ -536,6 +707,16 @@ pub enum SmtpAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Mail From")]
     MailFrom,
     #[strum(serialize = "Date")]
@@ -564,6 +745,16 @@ pub enum SshAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Client")]
     Client,
     #[strum(serialize = "Server")]
@@ -604,6 +795,16 @@ pub enum TlsAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Server Name")]
     ServerName,
     #[strum(serialize = "ALPN Protocol")]
@@ -666,6 +867,16 @@ pub enum NetworkAttr {
     DstPort,
     #[strum(serialize = "Protocol Number")]
     Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
     #[strum(serialize = "Content")]
     Content,
 }
@@ -697,8 +908,8 @@ mod tests {
     fn convert_to_protocol_attr_enum() {
         use crate::attribute::{
             BootpAttr, ConnAttr, DhcpAttr, DnsAttr, FtpAttr, HttpAttr, KerberosAttr, LdapAttr,
-            LogAttr, MqttAttr, NetworkAttr, NfsAttr, NtlmAttr, RawEventAttrKind, RawEventKind,
-            RdpAttr, SmbAttr, SmtpAttr, SshAttr, TlsAttr, WindowAttr,
+            LogAttr, MqttAttr, NetworkAttr, NfsAttr, NtlmAttr, RadiusAttr, RawEventAttrKind,
+            RawEventKind, RdpAttr, SmbAttr, SmtpAttr, SshAttr, TlsAttr, WindowAttr,
         };
 
         const INVALID_ATTR_FIELD_NAME: &str = "invalid-attr-field";
@@ -809,6 +1020,15 @@ mod tests {
             )
             .expect("The raw event type and attribute name are always valid."),
             RawEventAttrKind::Ntlm(NtlmAttr::Domainname)
+        );
+
+        assert_eq!(
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::Radius,
+                &RadiusAttr::UserName.to_string()
+            )
+            .expect("The raw event type and attribute name are always valid."),
+            RawEventAttrKind::Radius(RadiusAttr::UserName)
         );
 
         assert_eq!(
