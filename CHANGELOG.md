@@ -55,7 +55,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   type and raw event's attribute name, which is later used by the triage to
   perform a comparison of values.
 
-[Unreleased]: https://github.com/aicers/attrievent/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/aicers/attrievent/compare/0.3.0...main
 [0.3.0]: https://github.com/aicers/attrievent/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/aicers/attrievent/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/aicers/attrievent/compare/0.1.0...0.2.0
