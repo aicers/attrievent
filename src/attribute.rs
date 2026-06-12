@@ -27,6 +27,7 @@ pub enum RawEventKind {
     Ssh,
     Tls,
     Window,
+    DceRpc,
 }
 
 #[derive(Debug, PartialEq)]
@@ -51,6 +52,7 @@ pub enum RawEventAttrKind {
     Ssh(SshAttr),
     Tls(TlsAttr),
     Window(WindowAttr),
+    DceRpc(DceRpcAttr),
 }
 
 impl RawEventAttrKind {
@@ -90,6 +92,7 @@ impl RawEventAttrKind {
             RawEventKind::Ssh => handle_attr!(SshAttr, Ssh),
             RawEventKind::Tls => handle_attr!(TlsAttr, Tls),
             RawEventKind::Window => handle_attr!(WindowAttr, Window),
+            RawEventKind::DceRpc => handle_attr!(DceRpcAttr, DceRpc),
         };
         parse_result.map_err(|e| anyhow!("Unknown attribute name: {e}"))
     }
@@ -231,6 +234,56 @@ pub enum DhcpAttr {
     ClientIdType,
     #[strum(serialize = "Client ID List")]
     ClientId,
+    #[strum(serialize = "Option Code")]
+    OptionCode,
+    #[strum(serialize = "Option Data")]
+    OptionData,
+}
+
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum DceRpcAttr {
+    #[strum(serialize = "Source IP")]
+    SrcAddr,
+    #[strum(serialize = "Source Port")]
+    SrcPort,
+    #[strum(serialize = "Destination IP")]
+    DstAddr,
+    #[strum(serialize = "Destination Port")]
+    DstPort,
+    #[strum(serialize = "Protocol Number")]
+    Proto,
+    #[strum(serialize = "Duration")]
+    Duration,
+    #[strum(serialize = "Packets Sent")]
+    OrigPkts,
+    #[strum(serialize = "Packets Received")]
+    RespPkts,
+    #[strum(serialize = "Layer 2 Bytes Sent")]
+    OrigL2Bytes,
+    #[strum(serialize = "Layer 2 Bytes Received")]
+    RespL2Bytes,
+    #[strum(serialize = "Presentation Context ID")]
+    ContextId,
+    #[strum(serialize = "Abstract Syntax UUID")]
+    AbstractSyntax,
+    #[strum(serialize = "Abstract Syntax Major Version")]
+    AbstractMajor,
+    #[strum(serialize = "Abstract Syntax Minor Version")]
+    AbstractMinor,
+    #[strum(serialize = "Transfer Syntax UUID")]
+    TransferSyntax,
+    #[strum(serialize = "Transfer Syntax Major Version")]
+    TransferMajor,
+    #[strum(serialize = "Transfer Syntax Minor Version")]
+    TransferMinor,
+    #[strum(serialize = "Presentation Context Result")]
+    Acceptance,
+    #[strum(serialize = "Provider Rejection Reason")]
+    Reason,
+    #[strum(serialize = "Request Context ID")]
+    RequestContextId,
+    #[strum(serialize = "Request Operation Number")]
+    RequestOpnum,
 }
 
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
@@ -907,9 +960,10 @@ mod tests {
     #[allow(clippy::too_many_lines)]
     fn convert_to_protocol_attr_enum() {
         use crate::attribute::{
-            BootpAttr, ConnAttr, DhcpAttr, DnsAttr, FtpAttr, HttpAttr, KerberosAttr, LdapAttr,
-            LogAttr, MqttAttr, NetworkAttr, NfsAttr, NtlmAttr, RadiusAttr, RawEventAttrKind,
-            RawEventKind, RdpAttr, SmbAttr, SmtpAttr, SshAttr, TlsAttr, WindowAttr,
+            BootpAttr, ConnAttr, DceRpcAttr, DhcpAttr, DnsAttr, FtpAttr, HttpAttr, KerberosAttr,
+            LdapAttr, LogAttr, MqttAttr, NetworkAttr, NfsAttr, NtlmAttr, RadiusAttr,
+            RawEventAttrKind, RawEventKind, RdpAttr, SmbAttr, SmtpAttr, SshAttr, TlsAttr,
+            WindowAttr,
         };
 
         const INVALID_ATTR_FIELD_NAME: &str = "invalid-attr-field";
@@ -1092,6 +1146,24 @@ mod tests {
             )
             .expect("The raw event type and attribute name are always valid."),
             RawEventAttrKind::Network(NetworkAttr::Content)
+        );
+
+        assert_eq!(
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::DceRpc,
+                &DceRpcAttr::ContextId.to_string()
+            )
+            .expect("The raw event type and attribute name are always valid."),
+            RawEventAttrKind::DceRpc(DceRpcAttr::ContextId)
+        );
+
+        assert_eq!(
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::DceRpc,
+                &DceRpcAttr::AbstractSyntax.to_string()
+            )
+            .expect("The raw event type and attribute name are always valid."),
+            RawEventAttrKind::DceRpc(DceRpcAttr::AbstractSyntax)
         );
 
         assert!(
