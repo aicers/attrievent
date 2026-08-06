@@ -25,7 +25,7 @@ jobs:
       - name: Clippy
         run: cargo clippy --tests -- -D warnings
       - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v21
+        uses: DavidAnson/markdownlint-cli2-action@v24
         with:
           globs: "**/*.md"
 
