@@ -1,17 +1,28 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - "**"
   pull_request:
-    branches:
-      - main
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && '-dispatch' || (github.run_attempt != '1' && format('-rerun-{0}', github.run_id) || '') }}
+  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  markdown:
+    name: Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v25
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -24,10 +35,6 @@ jobs:
         run: cargo fmt -- --check --config group_imports=StdExternalCrate
       - name: Clippy
         run: cargo clippy --tests -- -D warnings
-      - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v24
-        with:
-          globs: "**/*.md"
 
   test:
     runs-on: ${{ matrix.os }}
@@ -60,3 +67,26 @@ jobs:
         with:
           files: lcov.info
           fail_ci_if_error: false
+
+  gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    permissions: {}
+    needs: [markdown, check, test, coverage]
+    if: ${{ always() }}
+    steps:
+      - name: Assert every job passed or was skipped
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          echo "${RESULTS}"
+          bad="$(printf '%s' "${RESULTS}" \
+            | jq -r 'to_entries[]
+                     | select(.value.result != "success" and .value.result != "skipped")
+                     | "  \(.key): \(.value.result)"')"
+          if [ -n "${bad}" ]; then
+            echo "Not green:" >&2
+            echo "${bad}" >&2
+            exit 1
+          fi
