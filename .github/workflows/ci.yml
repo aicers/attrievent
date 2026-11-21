@@ -18,9 +18,18 @@ jobs:
     name: Markdown
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - id: checkout
+        uses: actions/checkout@v5
       - name: markdownlint
         uses: DavidAnson/markdownlint-cli2-action@v25
+      # The shared instruction blocks in AGENTS.md must match the release
+      # `.agent-instructions.toml` pins. Not skipped when markdownlint
+      # fails, since the two checks are independent; skipped when the run
+      # was cancelled or the checkout failed, which would otherwise be
+      # reported as drift.
+      - name: Check shared instruction-block drift
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        uses: aicers/agent-instructions/check-drift@main
 
   check:
     runs-on: ubuntu-latest
