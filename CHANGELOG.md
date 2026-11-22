@@ -5,6 +5,20 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0](https://github.com/aicers/attrievent/compare/0.4.0...0.5.0) - 2026-11-22
+
+### Added
+
+- [**breaking**] use review-protocol's raw event kinds for attributes ([#65](https://github.com/aicers/attrievent/pull/65))
+
+### Other
+
+- update shared instruction blocks to 0.6.4 ([#64](https://github.com/aicers/attrievent/pull/64))
+- update shared instruction blocks to 0.6.3 ([#61](https://github.com/aicers/attrievent/pull/61))
+- automate releases with release-plz ([#58](https://github.com/aicers/attrievent/pull/58))
+- Run CI on pull requests into any branch ([#54](https://github.com/aicers/attrievent/pull/54))
+- Standardize the CI workflow ([#52](https://github.com/aicers/attrievent/pull/52))
+
 ## [0.4.0] - 2026-10-01
 
 ### Added
