@@ -6,7 +6,7 @@ publish = false
 
 [dependencies]
 anyhow = "1"
-review-protocol = { git = "https://github.com/aicers/review-protocol.git", tag = "0.28.0", default-features = false }
+review-protocol = { git = "https://github.com/aicers/review-protocol.git", tag = "0.29.0", default-features = false }
 strum = "0.28"
 strum_macros = "0.28"
 
