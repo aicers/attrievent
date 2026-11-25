@@ -32,8 +32,13 @@ pub enum RawEventAttrKind {
     FileCreateTime(FileCreateTimeAttr),
     NetworkConnect(NetworkConnectAttr),
     ProcessTerminate(ProcessTerminateAttr),
+    DriverLoad(DriverLoadAttr),
     ImageLoad(ImageLoadAttr),
+    CreateRemoteThread(CreateRemoteThreadAttr),
+    RawAccessRead(RawAccessReadAttr),
+    ProcessAccess(ProcessAccessAttr),
     FileCreate(FileCreateAttr),
+    RegistryObjectAddDel(RegistryObjectAddDelAttr),
     RegistryValueSet(RegistryValueSetAttr),
     RegistryKeyRename(RegistryKeyRenameAttr),
     FileCreateStreamHash(FileCreateStreamHashAttr),
@@ -44,6 +49,9 @@ pub enum RawEventAttrKind {
     FileDeleteDetected(FileDeleteDetectedAttr),
     Netflow5(Netflow5Attr),
     Netflow9(Netflow9Attr),
+    WindowsEventLog(WindowsEventLogAttr),
+    Journald(JournaldAttr),
+    Auditd(AuditdAttr),
 }
 
 impl RawEventAttrKind {
@@ -94,8 +102,17 @@ impl RawEventAttrKind {
             RawEventKind::ProcessTerminate => {
                 handle_attr!(ProcessTerminateAttr, ProcessTerminate)
             }
+            RawEventKind::DriverLoad => handle_attr!(DriverLoadAttr, DriverLoad),
             RawEventKind::ImageLoad => handle_attr!(ImageLoadAttr, ImageLoad),
+            RawEventKind::CreateRemoteThread => {
+                handle_attr!(CreateRemoteThreadAttr, CreateRemoteThread)
+            }
+            RawEventKind::RawAccessRead => handle_attr!(RawAccessReadAttr, RawAccessRead),
+            RawEventKind::ProcessAccess => handle_attr!(ProcessAccessAttr, ProcessAccess),
             RawEventKind::FileCreate => handle_attr!(FileCreateAttr, FileCreate),
+            RawEventKind::RegistryObjectAddDel => {
+                handle_attr!(RegistryObjectAddDelAttr, RegistryObjectAddDel)
+            }
             RawEventKind::RegistryValueSet => {
                 handle_attr!(RegistryValueSetAttr, RegistryValueSet)
             }
@@ -114,6 +131,9 @@ impl RawEventAttrKind {
             }
             RawEventKind::Netflow5 => handle_attr!(Netflow5Attr, Netflow5),
             RawEventKind::Netflow9 => handle_attr!(Netflow9Attr, Netflow9),
+            RawEventKind::WindowsEventLog => handle_attr!(WindowsEventLogAttr, WindowsEventLog),
+            RawEventKind::Journald => handle_attr!(JournaldAttr, Journald),
+            RawEventKind::Auditd => handle_attr!(AuditdAttr, Auditd),
         };
         parse_result.map_err(|e| anyhow!("Unknown attribute name: {e}"))
     }
@@ -1012,7 +1032,8 @@ pub enum IcmpAttr {
 }
 
 /// The attributes of a `ProcessCreate` raw event, one per field of
-/// [`review_protocol::types::raw_event::ProcessCreate`].
+/// [`review_protocol::types::raw_event::ProcessCreate`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum ProcessCreateAttr {
     #[strum(serialize = "Agent Name")]
@@ -1061,10 +1082,13 @@ pub enum ProcessCreateAttr {
     ParentCommandLine,
     #[strum(serialize = "Parent User")]
     ParentUser,
+    #[strum(serialize = "Logon ID Full")]
+    LogonIdFull,
 }
 
 /// The attributes of a `FileCreateTime` raw event, one per field of
-/// [`review_protocol::types::raw_event::FileCreateTime`].
+/// [`review_protocol::types::raw_event::FileCreateTime`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum FileCreateTimeAttr {
     #[strum(serialize = "Agent Name")]
@@ -1088,7 +1112,8 @@ pub enum FileCreateTimeAttr {
 }
 
 /// The attributes of a `NetworkConnect` raw event, one per field of
-/// [`review_protocol::types::raw_event::NetworkConnect`].
+/// [`review_protocol::types::raw_event::NetworkConnect`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum NetworkConnectAttr {
     #[strum(serialize = "Agent Name")]
@@ -1130,7 +1155,8 @@ pub enum NetworkConnectAttr {
 }
 
 /// The attributes of a `ProcessTerminate` raw event, one per field of
-/// [`review_protocol::types::raw_event::ProcessTerminate`].
+/// [`review_protocol::types::raw_event::ProcessTerminate`] except the host
+/// header `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum ProcessTerminateAttr {
     #[strum(serialize = "Agent Name")]
@@ -1147,8 +1173,30 @@ pub enum ProcessTerminateAttr {
     User,
 }
 
+/// The attributes of a `DriverLoad` raw event, one per field of
+/// [`review_protocol::types::raw_event::DriverLoad`] except the host header
+/// `endpoint`, which has no attribute.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum DriverLoadAttr {
+    #[strum(serialize = "Agent Name")]
+    AgentName,
+    #[strum(serialize = "Agent ID")]
+    AgentId,
+    #[strum(serialize = "Image Loaded")]
+    ImageLoaded,
+    #[strum(serialize = "Hashes")]
+    Hashes,
+    #[strum(serialize = "Signed")]
+    Signed,
+    #[strum(serialize = "Signature")]
+    Signature,
+    #[strum(serialize = "Signature Status")]
+    SignatureStatus,
+}
+
 /// The attributes of an `ImageLoad` raw event, one per field of
-/// [`review_protocol::types::raw_event::ImageLoad`].
+/// [`review_protocol::types::raw_event::ImageLoad`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum ImageLoadAttr {
     #[strum(serialize = "Agent Name")]
@@ -1185,8 +1233,98 @@ pub enum ImageLoadAttr {
     User,
 }
 
+/// The attributes of a `CreateRemoteThread` raw event, one per field of
+/// [`review_protocol::types::raw_event::CreateRemoteThread`] except the host
+/// header `endpoint`, which has no attribute.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum CreateRemoteThreadAttr {
+    #[strum(serialize = "Agent Name")]
+    AgentName,
+    #[strum(serialize = "Agent ID")]
+    AgentId,
+    #[strum(serialize = "Source Process GUID")]
+    SourceProcessGuid,
+    #[strum(serialize = "Source Process ID")]
+    SourceProcessId,
+    #[strum(serialize = "Source Image")]
+    SourceImage,
+    #[strum(serialize = "Target Process GUID")]
+    TargetProcessGuid,
+    #[strum(serialize = "Target Process ID")]
+    TargetProcessId,
+    #[strum(serialize = "Target Image")]
+    TargetImage,
+    #[strum(serialize = "New Thread ID")]
+    NewThreadId,
+    #[strum(serialize = "Start Address")]
+    StartAddress,
+    #[strum(serialize = "Start Module")]
+    StartModule,
+    #[strum(serialize = "Start Function")]
+    StartFunction,
+    #[strum(serialize = "Source User")]
+    SourceUser,
+    #[strum(serialize = "Target User")]
+    TargetUser,
+}
+
+/// The attributes of a `RawAccessRead` raw event, one per field of
+/// [`review_protocol::types::raw_event::RawAccessRead`] except the host header
+/// `endpoint`, which has no attribute.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum RawAccessReadAttr {
+    #[strum(serialize = "Agent Name")]
+    AgentName,
+    #[strum(serialize = "Agent ID")]
+    AgentId,
+    #[strum(serialize = "Process GUID")]
+    ProcessGuid,
+    #[strum(serialize = "Process ID")]
+    ProcessId,
+    #[strum(serialize = "Image")]
+    Image,
+    #[strum(serialize = "Device")]
+    Device,
+    #[strum(serialize = "User")]
+    User,
+}
+
+/// The attributes of a `ProcessAccess` raw event, one per field of
+/// [`review_protocol::types::raw_event::ProcessAccess`] except the host header
+/// `endpoint`, which has no attribute.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum ProcessAccessAttr {
+    #[strum(serialize = "Agent Name")]
+    AgentName,
+    #[strum(serialize = "Agent ID")]
+    AgentId,
+    #[strum(serialize = "Source Process GUID")]
+    SourceProcessGuid,
+    #[strum(serialize = "Source Process ID")]
+    SourceProcessId,
+    #[strum(serialize = "Source Thread ID")]
+    SourceThreadId,
+    #[strum(serialize = "Source Image")]
+    SourceImage,
+    #[strum(serialize = "Target Process GUID")]
+    TargetProcessGuid,
+    #[strum(serialize = "Target Process ID")]
+    TargetProcessId,
+    #[strum(serialize = "Target Image")]
+    TargetImage,
+    #[strum(serialize = "Granted Access")]
+    GrantedAccess,
+    #[strum(serialize = "Call Trace")]
+    CallTrace,
+    #[strum(serialize = "Source User")]
+    SourceUser,
+    #[strum(serialize = "Target User")]
+    TargetUser,
+}
+
 /// The attributes of a `FileCreate` raw event, one per field of
-/// [`review_protocol::types::raw_event::FileCreate`].
+/// [`review_protocol::types::raw_event::FileCreate`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum FileCreateAttr {
     #[strum(serialize = "Agent Name")]
@@ -1207,8 +1345,32 @@ pub enum FileCreateAttr {
     User,
 }
 
+/// The attributes of a `RegistryObjectAddDel` raw event, one per field of
+/// [`review_protocol::types::raw_event::RegistryObjectAddDel`] except the host
+/// header `endpoint`, which has no attribute.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum RegistryObjectAddDelAttr {
+    #[strum(serialize = "Agent Name")]
+    AgentName,
+    #[strum(serialize = "Agent ID")]
+    AgentId,
+    #[strum(serialize = "Event Type")]
+    EventType,
+    #[strum(serialize = "Process GUID")]
+    ProcessGuid,
+    #[strum(serialize = "Process ID")]
+    ProcessId,
+    #[strum(serialize = "Image")]
+    Image,
+    #[strum(serialize = "Target Object")]
+    TargetObject,
+    #[strum(serialize = "User")]
+    User,
+}
+
 /// The attributes of a `RegistryValueSet` raw event, one per field of
-/// [`review_protocol::types::raw_event::RegistryValueSet`].
+/// [`review_protocol::types::raw_event::RegistryValueSet`] except the host
+/// header `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum RegistryValueSetAttr {
     #[strum(serialize = "Agent Name")]
@@ -1232,7 +1394,8 @@ pub enum RegistryValueSetAttr {
 }
 
 /// The attributes of a `RegistryKeyRename` raw event, one per field of
-/// [`review_protocol::types::raw_event::RegistryKeyRename`].
+/// [`review_protocol::types::raw_event::RegistryKeyRename`] except the host
+/// header `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum RegistryKeyRenameAttr {
     #[strum(serialize = "Agent Name")]
@@ -1256,7 +1419,8 @@ pub enum RegistryKeyRenameAttr {
 }
 
 /// The attributes of a `FileCreateStreamHash` raw event, one per field of
-/// [`review_protocol::types::raw_event::FileCreateStreamHash`].
+/// [`review_protocol::types::raw_event::FileCreateStreamHash`] except the host
+/// header `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum FileCreateStreamHashAttr {
     #[strum(serialize = "Agent Name")]
@@ -1282,7 +1446,8 @@ pub enum FileCreateStreamHashAttr {
 }
 
 /// The attributes of a `PipeEvent` raw event, one per field of
-/// [`review_protocol::types::raw_event::PipeEvent`].
+/// [`review_protocol::types::raw_event::PipeEvent`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum PipeEventAttr {
     #[strum(serialize = "Agent Name")]
@@ -1304,7 +1469,8 @@ pub enum PipeEventAttr {
 }
 
 /// The attributes of a `DnsQuery` raw event, one per field of
-/// [`review_protocol::types::raw_event::DnsQuery`].
+/// [`review_protocol::types::raw_event::DnsQuery`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum DnsQueryAttr {
     #[strum(serialize = "Agent Name")]
@@ -1328,7 +1494,8 @@ pub enum DnsQueryAttr {
 }
 
 /// The attributes of a `FileDelete` raw event, one per field of
-/// [`review_protocol::types::raw_event::FileDelete`].
+/// [`review_protocol::types::raw_event::FileDelete`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum FileDeleteAttr {
     #[strum(serialize = "Agent Name")]
@@ -1354,7 +1521,8 @@ pub enum FileDeleteAttr {
 }
 
 /// The attributes of a `ProcessTamper` raw event, one per field of
-/// [`review_protocol::types::raw_event::ProcessTamper`].
+/// [`review_protocol::types::raw_event::ProcessTamper`] except the host header
+/// `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum ProcessTamperAttr {
     #[strum(serialize = "Agent Name")]
@@ -1374,7 +1542,8 @@ pub enum ProcessTamperAttr {
 }
 
 /// The attributes of a `FileDeleteDetected` raw event, one per field of
-/// [`review_protocol::types::raw_event::FileDeleteDetected`].
+/// [`review_protocol::types::raw_event::FileDeleteDetected`] except the host
+/// header `endpoint`, which has no attribute.
 #[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
 pub enum FileDeleteDetectedAttr {
     #[strum(serialize = "Agent Name")]
@@ -1473,6 +1642,65 @@ pub enum Netflow9Attr {
     Contents,
 }
 
+/// The attributes of a `WindowsEventLog` raw event, one per field of
+/// [`review_protocol::types::raw_event::WindowsEventLog`] except the host
+/// header `endpoint`, which has no attribute.
+///
+/// The list field `event_data` is a single attribute, not one per element.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum WindowsEventLogAttr {
+    #[strum(serialize = "Channel")]
+    Channel,
+    #[strum(serialize = "Provider")]
+    Provider,
+    #[strum(serialize = "Event ID")]
+    EventId,
+    #[strum(serialize = "Version")]
+    Version,
+    #[strum(serialize = "Level")]
+    Level,
+    #[strum(serialize = "Task")]
+    Task,
+    #[strum(serialize = "Opcode")]
+    Opcode,
+    #[strum(serialize = "Keywords")]
+    Keywords,
+    #[strum(serialize = "Record ID")]
+    RecordId,
+    #[strum(serialize = "Computer")]
+    Computer,
+    #[strum(serialize = "User SID")]
+    UserSid,
+    #[strum(serialize = "Event Data")]
+    EventData,
+    #[strum(serialize = "User Data XML")]
+    UserDataXml,
+}
+
+/// The attributes of a `Journald` raw event, one per field of
+/// [`review_protocol::types::raw_event::Journald`] except the host header
+/// `endpoint`, which has no attribute.
+///
+/// The list field `fields` is a single attribute, not one per element.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum JournaldAttr {
+    #[strum(serialize = "Fields")]
+    Fields,
+}
+
+/// The attributes of an `Auditd` raw event, one per field of
+/// [`review_protocol::types::raw_event::Auditd`] except the host header
+/// `endpoint`, which has no attribute.
+///
+/// The list field `records` is a single attribute, not one per element.
+#[derive(Debug, EnumString, PartialEq, EnumIter, Display)]
+pub enum AuditdAttr {
+    #[strum(serialize = "Serial")]
+    Serial,
+    #[strum(serialize = "Records")]
+    Records,
+}
+
 #[cfg(test)]
 mod tests {
     use std::fmt::{Debug, Display};
@@ -1483,14 +1711,20 @@ mod tests {
     use super::*;
 
     const INVALID_ATTR_FIELD_NAME: &str = "invalid-attr-field";
-    const RAW_EVENT_KIND_COUNT: usize = 36;
+    const RAW_EVENT_KIND_COUNT: usize = 44;
+    const HOST_HEADER_VARIANT: &str = "Endpoint";
+    const HOST_HEADER_NAMES: [&str; 2] = ["Endpoint", "endpoint"];
 
     /// Asserts that every display name of `A` parses, for `kind`, to the
     /// matching variant wrapped by `wrap`, that the display names are
-    /// unique, and that an unknown name is rejected.
-    fn assert_attr_names_parse<A>(kind: RawEventKind, wrap: fn(A) -> RawEventAttrKind)
+    /// unique, that an unknown name is rejected, and that no variant stands
+    /// for the host header. Returns the display names.
+    fn assert_attr_names_parse<A>(
+        kind: RawEventKind,
+        wrap: fn(A) -> RawEventAttrKind,
+    ) -> Vec<String>
     where
-        A: IntoEnumIterator + Display,
+        A: IntoEnumIterator + Display + Debug,
     {
         let mut names: Vec<String> = A::iter().map(|attr| attr.to_string()).collect();
         assert!(!names.is_empty(), "{kind:?} has no attributes");
@@ -1500,6 +1734,11 @@ mod tests {
         assert_eq!(names.len(), count, "{kind:?} has a duplicate display name");
 
         for attr in A::iter() {
+            assert_ne!(
+                format!("{attr:?}"),
+                HOST_HEADER_VARIANT,
+                "{kind:?} has a host header variant"
+            );
             let name = attr.to_string();
             let parsed = RawEventAttrKind::from_kind_and_attr_name(&kind, &name)
                 .unwrap_or_else(|e| panic!("{kind:?} rejected {name:?}: {e}"));
@@ -1510,11 +1749,19 @@ mod tests {
             RawEventAttrKind::from_kind_and_attr_name(&kind, INVALID_ATTR_FIELD_NAME).is_err(),
             "{kind:?} accepted an unknown attribute name"
         );
+        for name in HOST_HEADER_NAMES {
+            assert!(
+                RawEventAttrKind::from_kind_and_attr_name(&kind, name).is_err(),
+                "{kind:?} accepted the host header name {name:?}"
+            );
+        }
+        names
     }
 
-    /// Checks the attribute names of `kind`. The match has one arm per kind
-    /// and no wildcard, so a kind without a check fails to compile.
-    fn check_kind(kind: RawEventKind) {
+    /// Checks the attribute names of `kind` and returns them. The match has
+    /// one arm per kind and no wildcard, so a kind without a check fails to
+    /// compile.
+    fn check_kind(kind: RawEventKind) -> Vec<String> {
         match kind {
             RawEventKind::Conn => assert_attr_names_parse(kind, RawEventAttrKind::Conn),
             RawEventKind::Dns => assert_attr_names_parse(kind, RawEventAttrKind::Dns),
@@ -1535,47 +1782,61 @@ mod tests {
             RawEventKind::Dhcp => assert_attr_names_parse(kind, RawEventAttrKind::Dhcp),
             RawEventKind::Radius => assert_attr_names_parse(kind, RawEventAttrKind::Radius),
             RawEventKind::MalformedDns => {
-                assert_attr_names_parse(kind, RawEventAttrKind::MalformedDns);
+                assert_attr_names_parse(kind, RawEventAttrKind::MalformedDns)
             }
             RawEventKind::Icmp => assert_attr_names_parse(kind, RawEventAttrKind::Icmp),
             RawEventKind::ProcessCreate => {
-                assert_attr_names_parse(kind, RawEventAttrKind::ProcessCreate);
+                assert_attr_names_parse(kind, RawEventAttrKind::ProcessCreate)
             }
             RawEventKind::FileCreateTime => {
-                assert_attr_names_parse(kind, RawEventAttrKind::FileCreateTime);
+                assert_attr_names_parse(kind, RawEventAttrKind::FileCreateTime)
             }
             RawEventKind::NetworkConnect => {
-                assert_attr_names_parse(kind, RawEventAttrKind::NetworkConnect);
+                assert_attr_names_parse(kind, RawEventAttrKind::NetworkConnect)
             }
             RawEventKind::ProcessTerminate => {
-                assert_attr_names_parse(kind, RawEventAttrKind::ProcessTerminate);
+                assert_attr_names_parse(kind, RawEventAttrKind::ProcessTerminate)
             }
+            RawEventKind::DriverLoad => assert_attr_names_parse(kind, RawEventAttrKind::DriverLoad),
             RawEventKind::ImageLoad => assert_attr_names_parse(kind, RawEventAttrKind::ImageLoad),
-            RawEventKind::FileCreate => {
-                assert_attr_names_parse(kind, RawEventAttrKind::FileCreate);
+            RawEventKind::CreateRemoteThread => {
+                assert_attr_names_parse(kind, RawEventAttrKind::CreateRemoteThread)
+            }
+            RawEventKind::RawAccessRead => {
+                assert_attr_names_parse(kind, RawEventAttrKind::RawAccessRead)
+            }
+            RawEventKind::ProcessAccess => {
+                assert_attr_names_parse(kind, RawEventAttrKind::ProcessAccess)
+            }
+            RawEventKind::FileCreate => assert_attr_names_parse(kind, RawEventAttrKind::FileCreate),
+            RawEventKind::RegistryObjectAddDel => {
+                assert_attr_names_parse(kind, RawEventAttrKind::RegistryObjectAddDel)
             }
             RawEventKind::RegistryValueSet => {
-                assert_attr_names_parse(kind, RawEventAttrKind::RegistryValueSet);
+                assert_attr_names_parse(kind, RawEventAttrKind::RegistryValueSet)
             }
             RawEventKind::RegistryKeyRename => {
-                assert_attr_names_parse(kind, RawEventAttrKind::RegistryKeyRename);
+                assert_attr_names_parse(kind, RawEventAttrKind::RegistryKeyRename)
             }
             RawEventKind::FileCreateStreamHash => {
-                assert_attr_names_parse(kind, RawEventAttrKind::FileCreateStreamHash);
+                assert_attr_names_parse(kind, RawEventAttrKind::FileCreateStreamHash)
             }
             RawEventKind::PipeEvent => assert_attr_names_parse(kind, RawEventAttrKind::PipeEvent),
             RawEventKind::DnsQuery => assert_attr_names_parse(kind, RawEventAttrKind::DnsQuery),
-            RawEventKind::FileDelete => {
-                assert_attr_names_parse(kind, RawEventAttrKind::FileDelete);
-            }
+            RawEventKind::FileDelete => assert_attr_names_parse(kind, RawEventAttrKind::FileDelete),
             RawEventKind::ProcessTamper => {
-                assert_attr_names_parse(kind, RawEventAttrKind::ProcessTamper);
+                assert_attr_names_parse(kind, RawEventAttrKind::ProcessTamper)
             }
             RawEventKind::FileDeleteDetected => {
-                assert_attr_names_parse(kind, RawEventAttrKind::FileDeleteDetected);
+                assert_attr_names_parse(kind, RawEventAttrKind::FileDeleteDetected)
             }
             RawEventKind::Netflow5 => assert_attr_names_parse(kind, RawEventAttrKind::Netflow5),
             RawEventKind::Netflow9 => assert_attr_names_parse(kind, RawEventAttrKind::Netflow9),
+            RawEventKind::WindowsEventLog => {
+                assert_attr_names_parse(kind, RawEventAttrKind::WindowsEventLog)
+            }
+            RawEventKind::Journald => assert_attr_names_parse(kind, RawEventAttrKind::Journald),
+            RawEventKind::Auditd => assert_attr_names_parse(kind, RawEventAttrKind::Auditd),
         }
     }
 
@@ -1588,9 +1849,173 @@ mod tests {
             .filter_map(|number| RawEventKind::try_from(number).ok())
             .collect();
         assert_eq!(kinds.len(), RAW_EVENT_KIND_COUNT);
-        for kind in kinds {
-            check_kind(kind);
+        let names_by_kind: Vec<(RawEventKind, Vec<String>)> = kinds
+            .into_iter()
+            .map(|kind| (kind, check_kind(kind)))
+            .collect();
+
+        // Every display name of any kind parses for exactly the kinds that
+        // have it, so a name belonging only to another kind is rejected.
+        let all_names: Vec<&String> = names_by_kind.iter().flat_map(|(_, names)| names).collect();
+        for (kind, names) in &names_by_kind {
+            for name in &all_names {
+                assert_eq!(
+                    RawEventAttrKind::from_kind_and_attr_name(kind, name).is_ok(),
+                    names.contains(name),
+                    "{kind:?} and {name:?}"
+                );
+            }
         }
+    }
+
+    /// Asserts that the display names of `A`, in declaration order, are
+    /// exactly `expected`.
+    fn assert_display_names<A>(expected: &[&str])
+    where
+        A: IntoEnumIterator + Display,
+    {
+        let names: Vec<String> = A::iter().map(|attr| attr.to_string()).collect();
+        assert_eq!(names, expected);
+    }
+
+    #[test]
+    fn new_attr_enums_have_exact_display_names() {
+        assert_display_names::<DriverLoadAttr>(&[
+            "Agent Name",
+            "Agent ID",
+            "Image Loaded",
+            "Hashes",
+            "Signed",
+            "Signature",
+            "Signature Status",
+        ]);
+        assert_display_names::<CreateRemoteThreadAttr>(&[
+            "Agent Name",
+            "Agent ID",
+            "Source Process GUID",
+            "Source Process ID",
+            "Source Image",
+            "Target Process GUID",
+            "Target Process ID",
+            "Target Image",
+            "New Thread ID",
+            "Start Address",
+            "Start Module",
+            "Start Function",
+            "Source User",
+            "Target User",
+        ]);
+        assert_display_names::<RawAccessReadAttr>(&[
+            "Agent Name",
+            "Agent ID",
+            "Process GUID",
+            "Process ID",
+            "Image",
+            "Device",
+            "User",
+        ]);
+        assert_display_names::<ProcessAccessAttr>(&[
+            "Agent Name",
+            "Agent ID",
+            "Source Process GUID",
+            "Source Process ID",
+            "Source Thread ID",
+            "Source Image",
+            "Target Process GUID",
+            "Target Process ID",
+            "Target Image",
+            "Granted Access",
+            "Call Trace",
+            "Source User",
+            "Target User",
+        ]);
+        assert_display_names::<RegistryObjectAddDelAttr>(&[
+            "Agent Name",
+            "Agent ID",
+            "Event Type",
+            "Process GUID",
+            "Process ID",
+            "Image",
+            "Target Object",
+            "User",
+        ]);
+        assert_display_names::<WindowsEventLogAttr>(&[
+            "Channel",
+            "Provider",
+            "Event ID",
+            "Version",
+            "Level",
+            "Task",
+            "Opcode",
+            "Keywords",
+            "Record ID",
+            "Computer",
+            "User SID",
+            "Event Data",
+            "User Data XML",
+        ]);
+        assert_display_names::<JournaldAttr>(&["Fields"]);
+        assert_display_names::<AuditdAttr>(&["Serial", "Records"]);
+    }
+
+    #[test]
+    fn logon_id_full_belongs_to_process_create_only() {
+        assert_eq!(
+            ProcessCreateAttr::iter().next_back(),
+            Some(ProcessCreateAttr::LogonIdFull)
+        );
+        assert_eq!(
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::ProcessCreate,
+                "Logon ID Full"
+            )
+            .ok(),
+            Some(RawEventAttrKind::ProcessCreate(
+                ProcessCreateAttr::LogonIdFull
+            ))
+        );
+        assert!(
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::ProcessTerminate,
+                "Logon ID Full"
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn new_kind_attr_names_stay_with_their_kinds() {
+        // A name of a new kind is rejected for an existing kind, and a name
+        // of an existing kind absent from a new kind is rejected for it.
+        let rejected = [
+            (RawEventKind::ProcessCreate, "Granted Access"),
+            (RawEventKind::ImageLoad, "Device"),
+            (RawEventKind::ProcessAccess, "Command Line"),
+            (RawEventKind::DriverLoad, "Command Line"),
+            (RawEventKind::CreateRemoteThread, "Granted Access"),
+            (RawEventKind::RawAccessRead, "Image Loaded"),
+            (RawEventKind::RegistryObjectAddDel, "Details"),
+            (RawEventKind::WindowsEventLog, "Agent Name"),
+            (RawEventKind::Journald, "Records"),
+            (RawEventKind::Auditd, "Fields"),
+            (RawEventKind::Conn, "Event Data"),
+        ];
+        for (kind, name) in rejected {
+            assert!(
+                RawEventAttrKind::from_kind_and_attr_name(&kind, name).is_err(),
+                "{kind:?} accepted {name:?}"
+            );
+        }
+        assert_eq!(
+            RawEventAttrKind::from_kind_and_attr_name(
+                &RawEventKind::ProcessAccess,
+                "Granted Access"
+            )
+            .ok(),
+            Some(RawEventAttrKind::ProcessAccess(
+                ProcessAccessAttr::GrantedAccess
+            ))
+        );
     }
 
     #[test]
@@ -1638,13 +2063,20 @@ mod tests {
     }
 
     /// Checks that `$attr` has exactly one variant per field of
-    /// `raw_event::$kind`. The fields expand to a destructuring pattern
+    /// `raw_event::$kind`, except the fields listed after `no_attr:`, which
+    /// have no attribute. All fields expand to a destructuring pattern
     /// without `..`, so a missing, extra or misspelled field fails to
-    /// compile; the variants are checked against `$attr::iter()`.
+    /// compile; only the mapped variants are checked against
+    /// `$attr::iter()`.
     macro_rules! assert_fields {
-        ($kind:ident => $attr:ident { $($field:ident => $variant:ident),+ $(,)? }) => {{
+        (
+            $kind:ident => $attr:ident {
+                $($field:ident => $variant:ident),+ $(,)?
+                $(; no_attr: $($no_attr:ident),+ $(,)?)?
+            }
+        ) => {{
             let _ = |body: &raw_event::$kind| {
-                let raw_event::$kind { $($field: _),+ } = body;
+                let raw_event::$kind { $($field: _,)+ $($($no_attr: _,)+)? } = body;
             };
             assert_same_variants(&[$($attr::$variant),+]);
         }};
@@ -1721,6 +2153,8 @@ mod tests {
             parent_image => ParentImage,
             parent_command_line => ParentCommandLine,
             parent_user => ParentUser,
+            logon_id_full => LogonIdFull;
+            no_attr: endpoint
         });
 
         assert_fields!(FileCreateTime => FileCreateTimeAttr {
@@ -1732,7 +2166,8 @@ mod tests {
             target_filename => TargetFilename,
             creation_utc_time => CreationUtcTime,
             previous_creation_utc_time => PreviousCreationUtcTime,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(NetworkConnect => NetworkConnectAttr {
@@ -1753,7 +2188,8 @@ mod tests {
             destination_ip => DestinationIp,
             destination_hostname => DestinationHostname,
             destination_port => DestinationPort,
-            destination_port_name => DestinationPortName,
+            destination_port_name => DestinationPortName;
+            no_attr: endpoint
         });
 
         assert_fields!(ProcessTerminate => ProcessTerminateAttr {
@@ -1762,7 +2198,19 @@ mod tests {
             process_guid => ProcessGuid,
             process_id => ProcessId,
             image => Image,
-            user => User,
+            user => User;
+            no_attr: endpoint
+        });
+
+        assert_fields!(DriverLoad => DriverLoadAttr {
+            agent_name => AgentName,
+            agent_id => AgentId,
+            image_loaded => ImageLoaded,
+            hashes => Hashes,
+            signed => Signed,
+            signature => Signature,
+            signature_status => SignatureStatus;
+            no_attr: endpoint
         });
 
         assert_fields!(ImageLoad => ImageLoadAttr {
@@ -1781,7 +2229,54 @@ mod tests {
             signed => Signed,
             signature => Signature,
             signature_status => SignatureStatus,
-            user => User,
+            user => User;
+            no_attr: endpoint
+        });
+
+        assert_fields!(CreateRemoteThread => CreateRemoteThreadAttr {
+            agent_name => AgentName,
+            agent_id => AgentId,
+            source_process_guid => SourceProcessGuid,
+            source_process_id => SourceProcessId,
+            source_image => SourceImage,
+            target_process_guid => TargetProcessGuid,
+            target_process_id => TargetProcessId,
+            target_image => TargetImage,
+            new_thread_id => NewThreadId,
+            start_address => StartAddress,
+            start_module => StartModule,
+            start_function => StartFunction,
+            source_user => SourceUser,
+            target_user => TargetUser;
+            no_attr: endpoint
+        });
+
+        assert_fields!(RawAccessRead => RawAccessReadAttr {
+            agent_name => AgentName,
+            agent_id => AgentId,
+            process_guid => ProcessGuid,
+            process_id => ProcessId,
+            image => Image,
+            device => Device,
+            user => User;
+            no_attr: endpoint
+        });
+
+        assert_fields!(ProcessAccess => ProcessAccessAttr {
+            agent_name => AgentName,
+            agent_id => AgentId,
+            source_process_guid => SourceProcessGuid,
+            source_process_id => SourceProcessId,
+            source_thread_id => SourceThreadId,
+            source_image => SourceImage,
+            target_process_guid => TargetProcessGuid,
+            target_process_id => TargetProcessId,
+            target_image => TargetImage,
+            granted_access => GrantedAccess,
+            call_trace => CallTrace,
+            source_user => SourceUser,
+            target_user => TargetUser;
+            no_attr: endpoint
         });
 
         assert_fields!(FileCreate => FileCreateAttr {
@@ -1792,7 +2287,20 @@ mod tests {
             image => Image,
             target_filename => TargetFilename,
             creation_utc_time => CreationUtcTime,
-            user => User,
+            user => User;
+            no_attr: endpoint
+        });
+
+        assert_fields!(RegistryObjectAddDel => RegistryObjectAddDelAttr {
+            agent_name => AgentName,
+            agent_id => AgentId,
+            event_type => EventType,
+            process_guid => ProcessGuid,
+            process_id => ProcessId,
+            image => Image,
+            target_object => TargetObject,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(RegistryValueSet => RegistryValueSetAttr {
@@ -1804,7 +2312,8 @@ mod tests {
             image => Image,
             target_object => TargetObject,
             details => Details,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(RegistryKeyRename => RegistryKeyRenameAttr {
@@ -1816,7 +2325,8 @@ mod tests {
             image => Image,
             target_object => TargetObject,
             new_name => NewName,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(FileCreateStreamHash => FileCreateStreamHashAttr {
@@ -1829,7 +2339,8 @@ mod tests {
             creation_utc_time => CreationUtcTime,
             hash => Hash,
             contents => Contents,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(PipeEvent => PipeEventAttr {
@@ -1840,7 +2351,8 @@ mod tests {
             process_id => ProcessId,
             pipe_name => PipeName,
             image => Image,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(DnsQuery => DnsQueryAttr {
@@ -1852,7 +2364,8 @@ mod tests {
             query_status => QueryStatus,
             query_results => QueryResults,
             image => Image,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(FileDelete => FileDeleteAttr {
@@ -1865,7 +2378,8 @@ mod tests {
             target_filename => TargetFilename,
             hashes => Hashes,
             is_executable => IsExecutable,
-            archived => Archived,
+            archived => Archived;
+            no_attr: endpoint
         });
 
         assert_fields!(ProcessTamper => ProcessTamperAttr {
@@ -1875,7 +2389,8 @@ mod tests {
             process_id => ProcessId,
             image => Image,
             tamper_type => TamperType,
-            user => User,
+            user => User;
+            no_attr: endpoint
         });
 
         assert_fields!(FileDeleteDetected => FileDeleteDetectedAttr {
@@ -1887,7 +2402,8 @@ mod tests {
             image => Image,
             target_filename => TargetFilename,
             hashes => Hashes,
-            is_executable => IsExecutable,
+            is_executable => IsExecutable;
+            no_attr: endpoint
         });
 
         assert_fields!(Netflow5 => Netflow5Attr {
@@ -1926,6 +2442,34 @@ mod tests {
             resp_port => DstPort,
             proto => Proto,
             contents => Contents,
+        });
+
+        assert_fields!(WindowsEventLog => WindowsEventLogAttr {
+            channel => Channel,
+            provider => Provider,
+            event_id => EventId,
+            version => Version,
+            level => Level,
+            task => Task,
+            opcode => Opcode,
+            keywords => Keywords,
+            record_id => RecordId,
+            computer => Computer,
+            user_sid => UserSid,
+            event_data => EventData,
+            user_data_xml => UserDataXml;
+            no_attr: endpoint
+        });
+
+        assert_fields!(Journald => JournaldAttr {
+            fields => Fields;
+            no_attr: endpoint
+        });
+
+        assert_fields!(Auditd => AuditdAttr {
+            serial => Serial,
+            records => Records;
+            no_attr: endpoint
         });
     }
 }
