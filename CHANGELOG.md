@@ -5,6 +5,12 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0](https://github.com/aicers/attrievent/compare/0.8.0...0.9.0) - 2026-11-25
+
+### Other
+
+- *(deps)* [**breaking**] raise review-protocol to 0.32.0 ([#80](https://github.com/aicers/attrievent/pull/80))
+
 ## [0.8.0](https://github.com/aicers/attrievent/compare/0.7.0...0.8.0) - 2026-11-24
 
 ### Other
