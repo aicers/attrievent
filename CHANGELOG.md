@@ -5,6 +5,13 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0](https://github.com/aicers/attrievent/compare/0.12.0...0.13.0) - 2026-11-28
+
+### Other
+
+- *(deps)* [**breaking**] move review-protocol to 0.37.0 ([#95](https://github.com/aicers/attrievent/pull/95))
+- *(dependabot)* exclude git-tag dependencies from the cooldown ([#94](https://github.com/aicers/attrievent/pull/94))
+
 ## [0.12.0](https://github.com/aicers/attrievent/compare/0.11.0...0.12.0) - 2026-11-26
 
 ### Other
